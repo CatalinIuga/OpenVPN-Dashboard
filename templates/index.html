@@ -1,0 +1,85 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenVPN Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.5.0/dist/full.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { createApp, ref } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+
+        let clients = ref([])
+
+        const getClients = () => {
+            fetch('/api/clients')
+                .then(response => response.json())
+                .then(data => {
+                    clients.value = data
+                })
+        }
+
+
+        const interval = setInterval(() => {
+            getClients()
+        }, 1000)
+
+        // destroy interval on page refresh
+        window.onbeforeunload = () => clearInterval(interval)
+
+
+        createApp({
+            setup() {
+                const message = ref('Hello Vue!')
+
+                return {
+                    message, getClients, clients
+                }
+            },
+            delimiters: ['[[', ']]']
+        }).mount('#app')
+    </script>
+</head>
+
+<body class="w-screen flex items-center justify-center bg-blue-900 text-white">
+    <div id="app">
+        <div class="flex justify-between">
+            <h1 class="text-3xl font-bold">OpenVPN Dashboard</h1>
+            <button class="btn" @click="getClients">Refresh</button>
+        </div>
+        <div class="flex justify-between">
+            <div class="flex flex-col">
+                <h2 class="text-xl font-bold">Clients</h2>
+                <div class="flex flex-col">
+                    <div v-for="client in clients" class="flex justify-between">
+                        <div class="flex flex-col">
+                            <div>[[client.name]]</div>
+                            <div>[[client.ip]]</div>
+                        </div>
+                        <div>[[client.connected_since]]</div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-col">
+                <h2 class="text-xl font-bold">Server</h2>
+                <div class="flex flex-col">
+                    <div>[[message]]</div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="modal.showModal()">open modal</button>
+            <dialog id="modal" class="modal">
+                <form method="dialog" class="modal-box">
+                    <h3 class="font-bold text-lg">Hello!</h3>
+                    <p class="py-4">Are you sure you want to logout?</p>
+                    <div class="flex justify-between">
+                        <button class="btn bg-red-400 text-white">Close</button>
+                        <a class="btn bg-green-400 text-white" href="/logout">Logout</a>
+                    </div>
+                </form>
+            </dialog>
+        </div>
+
+</body>
+
+</html>
