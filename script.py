@@ -1,10 +1,18 @@
+import os
 import subprocess
 
-process = subprocess.Popen(["timeout", "0.1s", "sudo", "tail", "-f", "/var/log/openvpn/status.log"],
-                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-print(process.stdout.read().decode('utf-8'))
+if os.getuid() != 0:
+    print("Please run as SUDO!")
+    exit(1)
 
-clients = subprocess.Popen(["sudo", "cat", "/etc/openvpn/ipp.txt"],
+connected = subprocess.Popen(["timeout", "0.1s", "tail", "-f", "/var/log/openvpn/status.log"],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+if connected.stderr.read().decode('utf-8') != '':
+    print(connected.stderr.read().decode('utf-8'))
+else:
+    print(connected.stdout.read().decode('utf-8'))
+
+clients = subprocess.Popen(["cat", "/etc/openvpn/ipp.txt"],
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 print(clients.stdout.read().decode('utf-8'))
 
