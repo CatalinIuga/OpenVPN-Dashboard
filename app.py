@@ -95,7 +95,8 @@ def create(name):
     if not session.get('logged_in'):
         return redirect('/login')
 
-    result = create_client(name)
+    # result = create_client(name)
+    result = None
     if result == None:
         return jsonify({"status": "error", "message": "Client already exists"})
     else:
