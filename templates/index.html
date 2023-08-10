@@ -22,7 +22,7 @@
 
         const interval = setInterval(() => {
             getClients()
-        }, 1000)
+        }, 10000)
 
         // destroy interval on page refresh
         window.onbeforeunload = () => clearInterval(interval)
@@ -31,7 +31,7 @@
         createApp({
             setup() {
                 const message = ref('Hello Vue!')
-
+                getClients()
                 return {
                     message, getClients, clients
                 }
@@ -41,45 +41,88 @@
     </script>
 </head>
 
-<body class="w-screen flex items-center justify-center bg-blue-900 text-white">
+
+
+<body class="w-screen text-white">
     <div id="app">
-        <div class="flex justify-between">
-            <h1 class="text-3xl font-bold">OpenVPN Dashboard</h1>
-            <button class="btn" @click="getClients">Refresh</button>
-        </div>
-        <div class="flex justify-between">
-            <div class="flex flex-col">
-                <h2 class="text-xl font-bold">Clients</h2>
-                <div class="flex flex-col">
-                    <div v-for="client in clients" class="flex justify-between">
-                        <div class="flex flex-col">
-                            <div>[[client.name]]</div>
-                            <div>[[client.ip]]</div>
+        <main v-cloak class="container mx-auto py-10 max-w-3xl relative">
+
+            <h1 class="text-5xl text-center font-bold p-4 mb-10">
+                <span class="text-orange-400">Open</span>
+                <span class="text-blue-700">VPN</span>
+                Dashboard
+            </h1>
+
+            <div class="flex flex-col mb-10">
+                <div class="flex justify-between">
+                    <h2 class="text-3xl font-bold">Registered Clients</h2>
+                    <button class="btn bg-blue-500 hover:bg-blue-600 text-white">Add Client</button>
+                </div>
+
+                <div v-if="clients.length" class="">
+                    <table class="table w-full">
+                        <thead class="font-bold text-center text-xl">
+                            <th>Name</th>
+                            <th>Real IP</th>
+                            <th>Virtual IP</th>
+                            <th>Connected Since</th>
+                            <th>Actions</th>
+                        </thead>
+                        <tbody class="text-xl text-center">
+                            <tr v-for="client in clients">
+                                <th>[[client.name]]
+                                    <span v-if="client.connected"
+                                        class="bg-green-500 rounded-full w-2 h-2 inline-block"></span>
+                                    <span v-else class="bg-red-500 rounded-full w-2 h-2 inline-block"></span>
+
+                                </th>
+                                <td v-if="client.connected">[[client.real_ip]]</td>
+                                <td v-if="client.connected">[[client.virtual_ip]]</td>
+                                <td v-if="client.connected">[[client.connected_since]]</td>
+                                <td v-else class="text-center text-red-500" colspan="3">Offline</td>
+
+
+                                <td class="flex gap-2 justify-center">
+                                    <a href="#" class="tooltip" data-tip="Download">
+                                        <svg class="w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                    </a>
+                                    <a href="#" class="tooltip" data-tip="Revoke">
+                                        <svg class="w-5 text-red-500" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                </td>
+                            </tr>
+                    </table>
+                </div>
+
+                <div v-else>
+                    No clients could be found!
+                </div>
+            </div>
+
+
+            <div class="flex items-center justify-center">
+                <button class="btn bg-red-500 text-white hover:bg-red-600" onclick="modal.showModal()">Logout</button>
+                <dialog id="modal" class="modal">
+                    <form method="dialog" class="modal-box">
+                        <h4 class="py-8 text-xl text-center">Are you sure you want to logout?</h4>
+                        <div class="flex justify-evenly">
+                            <button class="btn bg-red-500 hover:bg-red-600 text-white">Close</button>
+                            <a class="btn bg-green-500 hover:bg-green-600 text-white" href="/logout">Logout</a>
                         </div>
-                        <div>[[client.connected_since]]</div>
-                    </div>
-                </div>
+                    </form>
+                </dialog>
             </div>
-            <div class="flex flex-col">
-                <h2 class="text-xl font-bold">Server</h2>
-                <div class="flex flex-col">
-                    <div>[[message]]</div>
-                </div>
-            </div>
-
-            <button class="btn" onclick="modal.showModal()">open modal</button>
-            <dialog id="modal" class="modal">
-                <form method="dialog" class="modal-box">
-                    <h3 class="font-bold text-lg">Hello!</h3>
-                    <p class="py-4">Are you sure you want to logout?</p>
-                    <div class="flex justify-between">
-                        <button class="btn bg-red-400 text-white">Close</button>
-                        <a class="btn bg-green-400 text-white" href="/logout">Logout</a>
-                    </div>
-                </form>
-            </dialog>
-        </div>
-
+        </main>
+    </div>
 </body>
 
 </html>
