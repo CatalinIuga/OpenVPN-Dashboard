@@ -19,10 +19,9 @@
                 })
         }
 
-
         const interval = setInterval(() => {
             getClients()
-        }, 10000)
+        }, 5000)
 
         // destroy interval on page refresh
         window.onbeforeunload = () => clearInterval(interval)
@@ -31,9 +30,33 @@
         createApp({
             setup() {
                 const message = ref('Hello Vue!')
+                const new_client_name = ref('')
+                const create_handle = (e) => {
+                    e.preventDefault()
+                    const res = fetch('/api/clients/' + new_client_name.value + '/create', {
+                        method: 'POST'
+                    }).then(response => response.json())
+                        .then(data => {
+                            alert(data.message)
+                            getClients()
+                        })
+                }
+                const revoke_handle = (e) => {
+                    e.preventDefault()
+                    if (confirm('Are you sure you want to revoke this client?')) {
+                        const res = fetch('/api/clients/' + e.target.name.value + '/revoke', {
+                            method: 'POST'
+                        }).then(response => response.json())
+                            .then(data => {
+                                alert(data.message)
+                                getClients()
+                            })
+                    }
+
+                }
                 getClients()
                 return {
-                    message, getClients, clients
+                    message, getClients, clients, new_client_name, create_handle, revoke_handle
                 }
             },
             delimiters: ['[[', ']]']
@@ -45,7 +68,7 @@
 
 <body class="w-screen text-white">
     <div id="app">
-        <main v-cloak class="container mx-auto py-10 max-w-3xl relative">
+        <main v-cloak class="container mx-auto py-10 px-10 relative">
 
             <h1 class="text-5xl text-center font-bold p-4 mb-10">
                 <span class="text-orange-400">Open</span>
@@ -56,7 +79,23 @@
             <div class="flex flex-col mb-10">
                 <div class="flex justify-between">
                     <h2 class="text-3xl font-bold">Registered Clients</h2>
-                    <button class="btn bg-blue-500 hover:bg-blue-600 text-white">Add Client</button>
+                    <label for="my_modal_6" class="btn">Add Client</label>
+                    <input type="checkbox" id="my_modal_6" class="modal-toggle" />
+                    <div class="modal">
+                        <div class="modal-box">
+                            <p class="text-lg font-bold">Add Client</p>
+                            <form :onsubmit="create_handle">
+                                <label for="name">Name</label>
+                                <input name="name" class="text-black" type="text" v-model="new_client_name">
+                                <button class="btn bg-blue-500 hover:bg-blue-600 text-white" type="submit">
+                                    Add
+                                </button>
+                            </form>
+                            <div class="modal-action">
+                                <label for="my_modal_6" class="btn">Close!</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div v-if="clients.length" class="">
@@ -66,6 +105,8 @@
                             <th>Real IP</th>
                             <th>Virtual IP</th>
                             <th>Connected Since</th>
+                            <th>Bytes Received</th>
+                            <th>Bytes Sent</th>
                             <th>Actions</th>
                         </thead>
                         <tbody class="text-xl text-center">
@@ -79,25 +120,33 @@
                                 <td v-if="client.connected">[[client.real_ip]]</td>
                                 <td v-if="client.connected">[[client.virtual_ip]]</td>
                                 <td v-if="client.connected">[[client.connected_since]]</td>
-                                <td v-else class="text-center text-red-500" colspan="3">Offline</td>
-
-
-                                <td class="flex gap-2 justify-center">
-                                    <a href="#" class="tooltip" data-tip="Download">
-                                        <svg class="w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                        </svg>
-                                    </a>
-                                    <a href="#" class="tooltip" data-tip="Revoke">
-                                        <svg class="w-5 text-red-500" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                    </a>
+                                <td v-if="client.connected">[[client.bytes_recv]] KB</td>
+                                <td v-if="client.connected">[[client.bytes_sent]] KB</td>
+                                <td v-else class="text-center text-red-500" colspan="5">
+                                    Offline
+                                </td>
+                                <td>
+                                    <div class="flex gap-2 justify-center items-center h-full">
+                                        <a :href="'/api/clients/' + client.name + '/config'" class="tooltip"
+                                            data-tip="Download">
+                                            <svg class="w-8 text-green-500" xmlns="http://www.w3.org/2000/svg"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                        </a>
+                                        <form :onsubmit="revoke_handle" class="flex mb-0">
+                                            <input type="hidden" name="name" :value="client.name">
+                                            <button class="tooltip flex items-center" data-tip="Revoke">
+                                                <svg class="w-8 text-red-500" xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd"
+                                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                     </table>
