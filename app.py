@@ -90,7 +90,7 @@ def create(name):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=51821)
     if os.name == 'posix':
         if os.getuid() != 0:
             print("Please run using SUDO!")
