@@ -90,8 +90,12 @@ def create(name):
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     from waitress import serve
     serve(app, host="13.81.243.218", port=51821)
+=======
+    app.run(debug=True, port=51821)
+>>>>>>> 60fabe6bce6707426150b7e1aadc9dda9d0588ef
     if os.name == 'posix':
         if os.getuid() != 0:
             print("Please run using SUDO!")
