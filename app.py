@@ -90,9 +90,11 @@ def create(name):
 
 
 if __name__ == "__main__":
-    from waitress import serve
-    serve(app, host="13.81.243.218", port=51821)
     if os.name == 'posix':
         if os.getuid() != 0:
             print("Please run using SUDO!")
             exit(1)
+    serve(app, host="13.81.243.218", port=51821)
+    from gevent.pywsgi import WSGIServer
+    http_server = WSGIServer(("0.0.0.0", 51821), app)
+    http_server.serve_forever()
