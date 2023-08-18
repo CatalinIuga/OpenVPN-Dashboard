@@ -21,7 +21,7 @@
 
         const interval = setInterval(() => {
             getClients()
-        }, 5000)
+        }, 1000)
 
         // destroy interval on page refresh
         window.onbeforeunload = () => clearInterval(interval)
@@ -84,10 +84,14 @@
                     <div class="modal">
                         <div class="modal-box">
                             <p class="text-lg font-bold">Add Client</p>
-                            <form :onsubmit="create_handle">
-                                <label for="name">Name</label>
-                                <input name="name" class="text-black" type="text" v-model="new_client_name">
-                                <button class="btn bg-blue-500 hover:bg-blue-600 text-white" type="submit">
+                            <form :onsubmit="create_handle" class="flex flex-col items-center justify-center">
+                                <div class="flex gap-2 p-2 w-full mt-5">
+                                    <label for="name">Name</label>
+                                    <input name="name" class="text-white w-full rounded-md" type="text"
+                                        v-model="new_client_name">
+                                </div>
+                                <button class="btn bg-blue-500 w-fit px-4 py-2 hover:bg-blue-600 text-white mt-5"
+                                    type="submit">
                                     Add
                                 </button>
                             </form>
