@@ -50,6 +50,7 @@ ch.js"></script>
 
         socket.on("connect", () => {
             fitToscreen();
+            socket.emit("pty-input", { input: "clear\n" });
         });
 
         socket.on("disconnect", () => {
